@@ -1,27 +1,41 @@
-import React, { useEffect, useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import BluetoothHelper from '../bluetooth'
 const { ipcRenderer } = window.require('electron')
 
-const Scan: React.FC = () => {
-  const [devices, setDevices] = useState([]) as any
+interface IDevice {
+  deviceName: string
+  deviceId: string
+}
 
-  const handleClick = () => {
-    BluetoothHelper.startScanning((device, name) => {
-      console.log(device, name)
+const Scan: React.FC = () => {
+  const [devices, setDevices] = useState<IDevice[]>([])
+  
+  const discoverDevices = () => {
+    ipcRenderer.send('start-scan')
+    
+    BluetoothHelper.startScanning((deviceId: string, deviceName: string) => {
+      setDevices(dvcs => {
+        if (dvcs.findIndex(x => x.deviceId === deviceId) > -1) {
+          return dvcs
+        }
+        return dvcs.concat({ deviceId, deviceName })
+      })
     })
   }
+
+  console.log(devices)
 
   return (
     <div>
       <h1>Scan view</h1>
       <Link to="/details">Details</Link>
-      <button type="button" onClick={handleClick}>Scan</button>
+      <button type="button" onClick={discoverDevices}>Scan</button>
       <button type="button" onClick={() => ipcRenderer.send('stop-scan')}>Stop</button>
       <div>
         {
           devices.length > 0 ? devices.map((device: any) => {
-            return <p key={device.deviceId}>{device.deviceName} | {device.deviceId}</p>
+            return <p key={device.deviceId}>{device.deviceId} | {device.deviceName}</p>
           }) : <p>Loading...</p>
         }
       </div>

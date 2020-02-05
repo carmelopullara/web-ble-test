@@ -2,6 +2,11 @@ const { ipcRenderer } = window.require('electron')
 
 type DeviceId = string;
 
+type device = {
+  deviceId: DeviceId
+  deviceName: string
+}
+
 interface WebBle {
   startScanning: (cb: (device: DeviceId, name: string) => void) => Promise<void>;
   connect?: (device: DeviceId, onDisconnect: () => void) => Promise<void>;
@@ -21,17 +26,18 @@ interface WebBle {
 }
 
 const BluetoothHelper: WebBle = {
-  startScanning: (cb) => new Promise((resolve, reject) => {
-    ipcRenderer.send('start-scan');
-    
+  startScanning: (cb) => new Promise(async (resolve, reject) => {
     (window.navigator as any).bluetooth.requestDevice({
       // filters: [{ services: ['battery_service'] }],
       acceptAllDevices: true
     })
-    .then((device: any) => {
-      console.log(device)
+    .catch((error: Error) => {
+      console.log(error)
     })
-    .catch((error: Error) => {})
+
+    ipcRenderer.on('discoveredDevices', (e: Event, data: device[]) => {
+      data.forEach(x => cb(x.deviceId, x.deviceName))
+    })
   })
 }
 
