@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
-import BluetoothHelper from '../bluetooth'
+import BluetoothHelper from '../utils/bluetooth'
 const { ipcRenderer } = window.require('electron')
 
 interface IDevice {
@@ -10,13 +10,17 @@ interface IDevice {
 
 const Scan: React.FC = () => {
   const [devices, setDevices] = useState<IDevice[]>([])
+  const [isScanning, setIsScanning] = useState(false)
   
   const discoverDevices = () => {
+    setIsScanning(true)
     ipcRenderer.send('start-scan')
     
     BluetoothHelper.startScanning((deviceId: string, deviceName: string) => {
       setDevices(dvcs => {
-        if (dvcs.findIndex(x => x.deviceId === deviceId) > -1) {
+        const existing = dvcs.findIndex(x => x.deviceId === deviceId)
+        if (existing > -1) {
+          dvcs[existing] = { deviceId, deviceName }
           return dvcs
         }
         return dvcs.concat({ deviceId, deviceName })
@@ -24,14 +28,22 @@ const Scan: React.FC = () => {
     })
   }
 
-  console.log(devices)
+  const handleClick = () => {
+    if (isScanning) {
+      ipcRenderer.send('stop-scan')
+      setIsScanning(false)
+    } else {
+      discoverDevices()
+    }
+  }
 
   return (
     <div>
       <h1>Scan view</h1>
       <Link to="/details">Details</Link>
-      <button type="button" onClick={discoverDevices}>Scan</button>
-      <button type="button" onClick={() => ipcRenderer.send('stop-scan')}>Stop</button>
+      <button type="button" onClick={handleClick}>
+        { isScanning ? 'Stop Scan' : 'Start Scan' }
+      </button>
       <div>
         {
           devices.length > 0 ? devices.map((device: any) => {

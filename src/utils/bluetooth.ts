@@ -9,7 +9,7 @@ type device = {
 
 interface WebBle {
   startScanning: (cb: (device: DeviceId, name: string) => void) => Promise<void>;
-  connect?: (device: DeviceId, onDisconnect: () => void) => Promise<void>;
+  connect: (device: DeviceId, onDisconnect: () => void) => Promise<void>;
   read?: (
     device: DeviceId,
     serviceUuid: string,
@@ -26,7 +26,7 @@ interface WebBle {
 }
 
 const BluetoothHelper: WebBle = {
-  startScanning: (cb) => new Promise(async (resolve, reject) => {
+  startScanning: (cb) => new Promise(() => {
     (window.navigator as any).bluetooth.requestDevice({
       // filters: [{ services: ['battery_service'] }],
       acceptAllDevices: true
@@ -38,6 +38,9 @@ const BluetoothHelper: WebBle = {
     ipcRenderer.on('discoveredDevices', (e: Event, data: device[]) => {
       data.forEach(x => cb(x.deviceId, x.deviceName))
     })
+  }),
+  connect: (device, onDisconnect) => new Promise(() => {
+    
   })
 }
 
