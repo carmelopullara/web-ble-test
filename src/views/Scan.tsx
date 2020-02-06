@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
 import BluetoothHelper from '../utils/bluetooth'
+import { Play, X } from 'react-feather'
+
 const { ipcRenderer } = window.require('electron')
 
 interface IDevice {
@@ -37,20 +38,60 @@ const Scan: React.FC = () => {
     }
   }
 
+  const connectDevice = (device: string) => {
+    BluetoothHelper.connect(device, () => {
+      console.log('disconnected')
+    })
+  }
+
   return (
     <div>
-      <h1>Scan view</h1>
-      <Link to="/details">Details</Link>
-      <button type="button" onClick={handleClick}>
-        { isScanning ? 'Stop Scan' : 'Start Scan' }
-      </button>
-      <div>
-        {
-          devices.length > 0 ? devices.map((device: any) => {
-            return <p key={device.deviceId}>{device.deviceId} | {device.deviceName}</p>
-          }) : <p>Loading...</p>
-        }
+      <div className="app__header">
+        <h3 className="app__header-title">Devices</h3>
+        <div>
+          <button className="btn" type="button" onClick={handleClick}>
+            { isScanning ? (
+              <>
+                <X />
+                Stop Scan
+              </>
+            ) : (
+              <>
+                <Play />
+                Start Scan
+              </>
+            ) }
+          </button>
+        </div>
       </div>
+      <table className="app__table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Address</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {
+            devices.length > 0 && devices.map((device: any) => (
+              <tr key={device.deviceId}>
+                <td>{device.deviceName}</td>
+                <td>{device.deviceId}</td>
+                <td>
+                  <button
+                    className="connect-btn"
+                    type="button"
+                    onClick={() => connectDevice(device.deviceId)}
+                  >
+                    Connect
+                  </button>
+                </td>
+              </tr>
+            ))
+          }
+        </tbody>
+      </table>
     </div>
   )
 }

@@ -40,7 +40,8 @@ const BluetoothHelper: WebBle = {
     })
   }),
   connect: (device, onDisconnect) => new Promise(() => {
-    
+    console.log(device)
+    onDisconnect()
   })
 }
 

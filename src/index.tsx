@@ -11,10 +11,10 @@ const App = () => {
     <Router>
       <div className="app__wrapper">
         <div className="app__title-bar" />
-        <main>
+        <div className="app__content">
           <Route exact path="/" component={Scan} />
           <Route path="/details" component={Details} />
-        </main>
+        </div>
       </div>
     </Router>
   )
