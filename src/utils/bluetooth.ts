@@ -54,7 +54,10 @@ const BluetoothHelper: WebBle = {
       })
       connectedDevice = device
       device.gatt.connect()
-      resolve()
+        .then(() => resolve())
+        .catch(() => {
+          reject()
+        })
     })
     .catch((error: Error) => {
       reject()

@@ -1,4 +1,6 @@
 import React, { useState, useContext } from 'react'
+import { useHistory } from "react-router-dom"
+import cx from 'classnames'
 import BluetoothHelper from '../utils/bluetooth'
 import { Play, X } from 'react-feather'
 import { StateContext } from '../utils/context'
@@ -12,7 +14,9 @@ interface IDevice {
 
 const Scan: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false)
+  const [deviceToConnect, setDeviceToConnect] = useState('')
   const { state, dispatch } = useContext(StateContext)
+  const history = useHistory()
   
   const discoverDevices = () => {
     setIsScanning(true)
@@ -41,8 +45,8 @@ const Scan: React.FC = () => {
   const connectDevice = (device: string) => {
     ipcRenderer.send('connect-device', device)
     setIsScanning(false)
+    setDeviceToConnect(device)
     BluetoothHelper.connect(device, () => {
-      console.log('device disconnected')
       dispatch({
         type: 'SET_CONNECTED_DEVICE',
         payload: null,
@@ -52,11 +56,13 @@ const Scan: React.FC = () => {
         type: 'SET_CONNECTED_DEVICE',
         payload: device,
       })
+      setDeviceToConnect('')
     }).catch(() => {
       dispatch({
         type: 'SET_CONNECTED_DEVICE',
         payload: null,
       })
+      setDeviceToConnect('')
     })
   }
 
@@ -65,7 +71,12 @@ const Scan: React.FC = () => {
       <div className="app__header">
         <h3 className="app__header-title">Devices</h3>
         <div>
-          <button className="btn" type="button" onClick={handleClick}>
+          <button
+            className={cx('btn', {
+              'btn--stop': isScanning,
+            })}
+            type="button"
+            onClick={handleClick}>
             { isScanning ? (
               <>
                 <X />
@@ -96,12 +107,20 @@ const Scan: React.FC = () => {
                 <td>{device.deviceId}</td>
                 <td>
                   <button
-                    className="connect-btn"
+                    className={cx('connect-btn', {
+                      'connect-btn--active': state.connectedDevice === device.deviceId
+                    })}
                     type="button"
-                    onClick={() => connectDevice(device.deviceId)}
+                    onClick={() => {
+                      if (state.connectedDevice === device.deviceId) {
+                        history.push('/details')
+                      } else {
+                        connectDevice(device.deviceId)
+                      }
+                    }}
                   >
                     {
-                      state.connectedDevice === device.deviceId ? 'Disconnect' : 'Connect'
+                      deviceToConnect === device.deviceId ? 'Connecting...' : (state.connectedDevice === device.deviceId ? 'Inspect' : 'Connect')
                     }
                   </button>
                 </td>
