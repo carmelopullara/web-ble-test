@@ -1,5 +1,5 @@
 import React, { useState, useContext } from 'react'
-import { useHistory } from "react-router-dom"
+import { useHistory } from 'react-router-dom'
 import cx from 'classnames'
 import BluetoothHelper from '../utils/bluetooth'
 import { Play, X } from 'react-feather'
@@ -17,18 +17,18 @@ const Scan: React.FC = () => {
   const [deviceToConnect, setDeviceToConnect] = useState('')
   const { state, dispatch } = useContext(StateContext)
   const history = useHistory()
-  
+
   const discoverDevices = () => {
     setIsScanning(true)
     ipcRenderer.send('start-scan')
-    
+
     BluetoothHelper.startScanning((deviceId: string, deviceName: string) => {
       dispatch({
         type: 'SET_NEARBY_DEVICE',
         payload: {
           deviceId,
           deviceName,
-        }
+        },
       })
     })
   }
@@ -51,19 +51,21 @@ const Scan: React.FC = () => {
         type: 'SET_CONNECTED_DEVICE',
         payload: null,
       })
-    }).then(() => {
-      dispatch({
-        type: 'SET_CONNECTED_DEVICE',
-        payload: device,
-      })
-      setDeviceToConnect('')
-    }).catch(() => {
-      dispatch({
-        type: 'SET_CONNECTED_DEVICE',
-        payload: null,
-      })
-      setDeviceToConnect('')
     })
+      .then(() => {
+        dispatch({
+          type: 'SET_CONNECTED_DEVICE',
+          payload: device,
+        })
+        setDeviceToConnect('')
+      })
+      .catch(() => {
+        dispatch({
+          type: 'SET_CONNECTED_DEVICE',
+          payload: null,
+        })
+        setDeviceToConnect('')
+      })
   }
 
   return (
@@ -76,8 +78,9 @@ const Scan: React.FC = () => {
               'btn--stop': isScanning,
             })}
             type="button"
-            onClick={handleClick}>
-            { isScanning ? (
+            onClick={handleClick}
+          >
+            {isScanning ? (
               <>
                 <X />
                 Stop Scan
@@ -87,7 +90,7 @@ const Scan: React.FC = () => {
                 <Play />
                 Start Scan
               </>
-            ) }
+            )}
           </button>
         </div>
       </div>
@@ -100,15 +103,15 @@ const Scan: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {
-            state.nearbyDevices.length > 0 && state.nearbyDevices.map((device: any) => (
+          {state.nearbyDevices.length > 0 &&
+            state.nearbyDevices.map((device: any) => (
               <tr key={device.deviceId}>
                 <td>{device.deviceName}</td>
                 <td>{device.deviceId}</td>
                 <td>
                   <button
                     className={cx('connect-btn', {
-                      'connect-btn--active': state.connectedDevice === device.deviceId
+                      'connect-btn--active': state.connectedDevice === device.deviceId,
                     })}
                     type="button"
                     onClick={() => {
@@ -119,14 +122,15 @@ const Scan: React.FC = () => {
                       }
                     }}
                   >
-                    {
-                      deviceToConnect === device.deviceId ? 'Connecting...' : (state.connectedDevice === device.deviceId ? 'Inspect' : 'Connect')
-                    }
+                    {deviceToConnect === device.deviceId
+                      ? 'Connecting...'
+                      : state.connectedDevice === device.deviceId
+                      ? 'Inspect'
+                      : 'Connect'}
                   </button>
                 </td>
               </tr>
-            ))
-          }
+            ))}
         </tbody>
       </table>
     </div>

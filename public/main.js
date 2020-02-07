@@ -8,7 +8,6 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680,
-    // titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
     },
@@ -16,7 +15,6 @@ function createWindow() {
 
   mainWindow.loadURL('http://localhost:3000')
   mainWindow.on('closed', () => (mainWindow = null))
-  // mainWindow.webContents.openDevTools()
 }
 
 app.on('ready', createWindow)

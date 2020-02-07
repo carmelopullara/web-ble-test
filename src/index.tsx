@@ -2,49 +2,51 @@ import React, { useReducer } from 'react'
 import ReactDOM from 'react-dom'
 import { HashRouter as Router, Route } from 'react-router-dom'
 import { StateContext } from './utils/context'
-import { device } from './utils/bluetooth'
+import { device } from './utils/bluetooth'
 import Scan from './views/Scan'
 import Details from './views/Details'
 import 'normalize.css/normalize.css'
 import './styles/style.scss'
 
 interface State {
-  nearbyDevices: device[],
+  nearbyDevices: device[]
   connectedDevice: device | null
 }
 
 interface Action {
   type: string
-  payload: any
+  payload?: any
 }
 
 const App = () => {
   const initialState: State = {
     nearbyDevices: [],
-    connectedDevice: null
+    connectedDevice: null,
   }
 
   const reducer = (state: State, action: Action) => {
     switch (action.type) {
       case 'SET_NEARBY_DEVICE':
-        const existing = state.nearbyDevices.findIndex(x => x.deviceId === action.payload.deviceId)
+        const existing = state.nearbyDevices.findIndex(
+          x => x.deviceId === action.payload.deviceId
+        )
         if (existing > -1) {
-          state.nearbyDevices[existing] = { deviceId: action.payload.deviceId, deviceName: action.payload.deviceName }
+          state.nearbyDevices[existing] = {
+            deviceId: action.payload.deviceId,
+            deviceName: action.payload.deviceName,
+          }
           return {
-            ...state
+            ...state,
           }
         }
         return {
           ...state,
-          nearbyDevices: [
-            ...state.nearbyDevices,
-            action.payload,
-          ]
+          nearbyDevices: [...state.nearbyDevices, action.payload],
         }
       case 'SET_CONNECTED_DEVICE':
         return {
           ...state,
-          connectedDevice: action.payload
+          connectedDevice: action.payload,
         }
       default:
         return state
@@ -52,7 +54,7 @@ const App = () => {
   }
 
   const [state, dispatch] = useReducer(reducer, initialState)
-  
+
   return (
     <StateContext.Provider value={{ state, dispatch }}>
       <Router>

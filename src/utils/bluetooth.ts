@@ -28,14 +28,14 @@ interface WebBle {
 }
 
 const BluetoothHelper: WebBle = {
-  startScanning: (cb) => {
-    (window.navigator as any).bluetooth.requestDevice({
-      // filters: [{ services: ['battery_service'] }],
-      acceptAllDevices: true
-    })
-    .catch((error: Error) => {
-      console.log(error)
-    })
+  startScanning: cb => {
+    ;(window.navigator as any).bluetooth.requestDevice({
+        // filters: [{ services: ['battery_service'] }],
+        acceptAllDevices: true,
+      })
+      .catch((error: Error) => {
+        console.log(error)
+      })
 
     ipcRenderer.on('discoveredDevices', (e: Event, data: device[]) => {
       data.forEach(x => cb(x.deviceId, x.deviceName))
@@ -43,26 +43,27 @@ const BluetoothHelper: WebBle = {
 
     return Promise.resolve()
   },
-  connect: (device, onDisconnect) => new Promise((resolve, reject) => {
-    (window.navigator as any).bluetooth.requestDevice({
-      filters: [{ services: ['battery_service'] }]
-    })
-    .then((device: any) => {
-      device.addEventListener('gattserverdisconnected', () => {
-        connectedDevice = null
-        onDisconnect()
-      })
-      connectedDevice = device
-      device.gatt.connect()
-        .then(() => resolve())
-        .catch(() => {
+  connect: (device, onDisconnect) =>
+    new Promise((resolve, reject) => {
+      ;(window.navigator as any).bluetooth.requestDevice({
+          filters: [{ services: ['battery_service'] }],
+        })
+        .then((device: any) => {
+          device.addEventListener('gattserverdisconnected', () => {
+            connectedDevice = null
+            onDisconnect()
+          })
+          connectedDevice = device
+          device.gatt
+            .connect()
+            .then(() => resolve())
+            .catch(() => reject())
+        })
+        .catch((error: Error) => {
+          console.log(error)
           reject()
         })
-    })
-    .catch((error: Error) => {
-      reject()
-    })
-  })
+    }),
 }
 
 export default BluetoothHelper
