@@ -1,15 +1,14 @@
-const { app, BrowserWindow, ipcMain, ipcRenderer } = require('electron')
+const { app, BrowserWindow, ipcMain } = require('electron')
 
 app.commandLine.appendSwitch('enable-experimental-web-platform-features')
 
 let mainWindow
-let webBluetoothCallback = null
 
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 900,
     height: 680,
-    titleBarStyle: 'hiddenInset',
+    // titleBarStyle: 'hiddenInset',
     webPreferences: {
       nodeIntegration: true,
     },
@@ -22,14 +21,26 @@ function createWindow() {
 
 app.on('ready', createWindow)
 
-const startScanning = (event, devices, callback) => {
-  event.preventDefault()
-  mainWindow.webContents.send('discoveredDevices', devices)
-}
-
 ipcMain.on('start-scan', (event, arg) => {
   mainWindow.webContents.removeAllListeners('select-bluetooth-device')
-  mainWindow.webContents.on('select-bluetooth-device', startScanning)
+  mainWindow.webContents.on('select-bluetooth-device', (event, devices, callback) => {
+    event.preventDefault()
+    mainWindow.webContents.send('discoveredDevices', devices)
+  })
+})
+
+ipcMain.on('connect-device', (event, arg) => {
+  mainWindow.webContents.removeAllListeners('select-bluetooth-device')
+  mainWindow.webContents.on('select-bluetooth-device', (event, devices, callback) => {
+    event.preventDefault();
+    let result = devices.find((device) => {
+      return device.deviceId === arg;
+    })
+
+    if (result) {
+      callback(result.deviceId);
+    }
+  })
 })
 
 ipcMain.on('stop-scan', (event, arg) => {

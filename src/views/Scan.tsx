@@ -1,6 +1,7 @@
-import React, { useState } from 'react'
+import React, { useState, useContext } from 'react'
 import BluetoothHelper from '../utils/bluetooth'
 import { Play, X } from 'react-feather'
+import { StateContext } from '../utils/context'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -10,21 +11,20 @@ interface IDevice {
 }
 
 const Scan: React.FC = () => {
-  const [devices, setDevices] = useState<IDevice[]>([])
   const [isScanning, setIsScanning] = useState(false)
+  const { state, dispatch } = useContext(StateContext)
   
   const discoverDevices = () => {
     setIsScanning(true)
     ipcRenderer.send('start-scan')
     
     BluetoothHelper.startScanning((deviceId: string, deviceName: string) => {
-      setDevices(dvcs => {
-        const existing = dvcs.findIndex(x => x.deviceId === deviceId)
-        if (existing > -1) {
-          dvcs[existing] = { deviceId, deviceName }
-          return dvcs
+      dispatch({
+        type: 'SET_NEARBY_DEVICE',
+        payload: {
+          deviceId,
+          deviceName,
         }
-        return dvcs.concat({ deviceId, deviceName })
       })
     })
   }
@@ -39,8 +39,24 @@ const Scan: React.FC = () => {
   }
 
   const connectDevice = (device: string) => {
+    ipcRenderer.send('connect-device', device)
+    setIsScanning(false)
     BluetoothHelper.connect(device, () => {
-      console.log('disconnected')
+      console.log('device disconnected')
+      dispatch({
+        type: 'SET_CONNECTED_DEVICE',
+        payload: null,
+      })
+    }).then(() => {
+      dispatch({
+        type: 'SET_CONNECTED_DEVICE',
+        payload: device,
+      })
+    }).catch(() => {
+      dispatch({
+        type: 'SET_CONNECTED_DEVICE',
+        payload: null,
+      })
     })
   }
 
@@ -74,7 +90,7 @@ const Scan: React.FC = () => {
         </thead>
         <tbody>
           {
-            devices.length > 0 && devices.map((device: any) => (
+            state.nearbyDevices.length > 0 && state.nearbyDevices.map((device: any) => (
               <tr key={device.deviceId}>
                 <td>{device.deviceName}</td>
                 <td>{device.deviceId}</td>
@@ -84,7 +100,9 @@ const Scan: React.FC = () => {
                     type="button"
                     onClick={() => connectDevice(device.deviceId)}
                   >
-                    Connect
+                    {
+                      state.connectedDevice === device.deviceId ? 'Disconnect' : 'Connect'
+                    }
                   </button>
                 </td>
               </tr>
