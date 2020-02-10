@@ -29,8 +29,8 @@ interface WebBle {
 
 const BluetoothHelper: WebBle = {
   startScanning: cb => {
-    const ble = window.navigator
-    ble.bluetooth.requestDevice({
+    const navigator = window.navigator
+    navigator.bluetooth.requestDevice({
         // filters: [{ services: ['battery_service'] }],
         acceptAllDevices: true,
       })
@@ -47,8 +47,8 @@ const BluetoothHelper: WebBle = {
   connect: (device, onDisconnect) =>
     new Promise(async (resolve, reject) => {
       try {
-        const ble = window.navigator
-        const device: BluetoothDevice = await ble.bluetooth.requestDevice({
+        const navigator = window.navigator
+        const device: BluetoothDevice = await navigator.bluetooth.requestDevice({
           filters: [{ services: ['battery_service'] }],
         })
 
