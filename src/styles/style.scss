@@ -97,6 +97,14 @@ h6 {
       background-color: darken(#f44e66, 5%);
     }
   }
+  &--ghost {
+    background-color: #fff;
+    border: 1px solid #cbd5e0;
+    color: #2d3748;
+    &:hover {
+      background-color: #fff;
+    }
+  }
 }
 
 .connect-btn {

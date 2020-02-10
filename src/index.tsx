@@ -2,15 +2,15 @@ import React, { useReducer } from 'react'
 import ReactDOM from 'react-dom'
 import { HashRouter as Router, Route } from 'react-router-dom'
 import { StateContext } from './utils/context'
-import { device } from './utils/bluetooth'
+import { IDevice } from './utils/bluetooth'
 import Scan from './views/Scan'
 import Details from './views/Details'
 import 'normalize.css/normalize.css'
 import './styles/style.scss'
 
 interface State {
-  nearbyDevices: device[]
-  connectedDevice: device | null
+  nearbyDevices: IDevice[]
+  connectedDevice: BluetoothDevice | null
 }
 
 interface Action {

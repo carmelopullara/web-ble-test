@@ -1,16 +1,11 @@
 import React, { useState, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import cx from 'classnames'
-import BluetoothHelper from '../utils/bluetooth'
+import BluetoothHelper, { IDevice } from '../utils/bluetooth'
 import { Play, X } from 'react-feather'
 import { StateContext } from '../utils/context'
 
 const { ipcRenderer } = window.require('electron')
-
-interface IDevice {
-  deviceName: string
-  deviceId: string
-}
 
 const Scan: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false)
@@ -69,7 +64,7 @@ const Scan: React.FC = () => {
   }
 
   return (
-    <div>
+    <div className="app__content">
       <div className="app__header">
         <h3 className="app__header-title">Devices</h3>
         <div>
@@ -104,7 +99,7 @@ const Scan: React.FC = () => {
         </thead>
         <tbody>
           {state.nearbyDevices.length > 0 &&
-            state.nearbyDevices.map((device: any) => (
+            state.nearbyDevices.map((device: IDevice) => (
               <tr key={device.deviceId}>
                 <td>{device.deviceName}</td>
                 <td>{device.deviceId}</td>
