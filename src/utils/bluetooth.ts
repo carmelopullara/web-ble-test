@@ -72,6 +72,7 @@ const BluetoothHelper: WebBle = {
         batteryLevelCharacteristic = await service.getCharacteristic(
           characteristicUuid
         )
+        
         batteryLevelListener = event => {
           const target = event.target as BluetoothRemoteGATTCharacteristic
           const value = target.value
