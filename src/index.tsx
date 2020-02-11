@@ -21,12 +21,13 @@ const App = () => {
           x => x.deviceId === action.payload.deviceId
         )
         if (existing > -1) {
-          state.nearbyDevices[existing] = {
+          const stateClone = state
+          stateClone.nearbyDevices[existing] = {
             deviceId: action.payload.deviceId,
             deviceName: action.payload.deviceName,
           }
           return {
-            ...state,
+            ...stateClone,
           }
         }
         return {
