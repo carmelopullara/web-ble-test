@@ -30,13 +30,13 @@ ipcMain.on('start-scan', (event, arg) => {
 ipcMain.on('connect-device', (event, arg) => {
   mainWindow.webContents.removeAllListeners('select-bluetooth-device')
   mainWindow.webContents.on('select-bluetooth-device', (event, devices, callback) => {
-    event.preventDefault();
+    event.preventDefault()
     let result = devices.find((device) => {
-      return device.deviceId === arg;
+      return device.deviceId === arg
     })
 
     if (result) {
-      callback(result.deviceId);
+      callback(result.deviceId)
     } else {
       callback('')
     }
