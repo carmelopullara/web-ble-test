@@ -9,7 +9,7 @@ import { IDevice } from '../utils/types'
 const { ipcRenderer } = window.require('electron')
 
 const Scan: React.FC = () => {
-  const [isScanning, setIsScanning] = useState(false)
+  const [isScanning, setIsScanning] = useState<boolean>(false)
   const [deviceToConnect, setDeviceToConnect] = useState<string | null>(null)
   const { state, dispatch } = useContext(StateContext)
   const history = useHistory()
