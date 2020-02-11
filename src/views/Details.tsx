@@ -26,7 +26,7 @@ const Details: React.FC = () => {
     }
     
     return () => {
-      (async function() {
+      ;(async function() {
         if (connectedDevice?.gatt?.connected) {
           batteryLevelCharacteristic?.removeEventListener('characteristicvaluechanged', batteryLevelListener)
           batteryLevelCharacteristic?.stopNotifications()
