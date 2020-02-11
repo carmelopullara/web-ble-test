@@ -1,6 +1,8 @@
 const { ipcRenderer } = window.require('electron')
 
 export let connectedDevice: BluetoothDevice | null = null
+export let batteryLevelCharacteristic: BluetoothRemoteGATTCharacteristic | null = null
+export let batteryLevelListener: (event: any) => void | null
 
 type DeviceId = string
 
@@ -17,7 +19,7 @@ interface WebBle {
     serviceUuid: string,
     characteristicUuid: string
   ) => Promise<Uint8Array>
-  subscribe?: (
+  subscribe: (
     device: DeviceId,
     serviceUuid: string,
     characteristicUuid: string,
@@ -31,8 +33,7 @@ const BluetoothHelper: WebBle = {
   startScanning: cb => {
     const navigator = window.navigator
     navigator.bluetooth.requestDevice({
-        // filters: [{ services: ['battery_service'] }],
-        acceptAllDevices: true,
+        filters: [{ services: ['battery_service'] }]
       })
       .catch((error: Error) => {
         console.log(error)
@@ -77,6 +78,22 @@ const BluetoothHelper: WebBle = {
       reject(error)
     }
   }),
+  subscribe: async (device, serviceUuid, characteristicUuid, cb) => {
+    try {
+      if (connectedDevice) {
+        const service = await connectedDevice.gatt!.getPrimaryService(serviceUuid)
+        batteryLevelCharacteristic = await service.getCharacteristic(characteristicUuid)
+        batteryLevelListener = (event: any) => {
+          cb(new Uint8Array(event.target.value.buffer))
+        }
+        
+        batteryLevelCharacteristic.addEventListener('characteristicvaluechanged', batteryLevelListener)
+        batteryLevelCharacteristic.startNotifications()
+      }
+    } catch (error) {
+      console.log(error)
+    }
+  },
   disconnect: (device) => new Promise(async (resolve) => {
     if (connectedDevice) {
       connectedDevice.gatt!.disconnect()

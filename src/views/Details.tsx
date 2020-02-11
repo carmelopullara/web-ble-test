@@ -1,7 +1,7 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { ArrowLeft, X } from 'react-feather'
-import BluetoothHelper, { connectedDevice } from '../utils/bluetooth'
+import BluetoothHelper, { connectedDevice, batteryLevelCharacteristic, batteryLevelListener } from '../utils/bluetooth'
 import { StateContext } from '../utils/context'
 
 const Details: React.FC = () => {
@@ -16,6 +16,21 @@ const Details: React.FC = () => {
           setBatteryLevel(value[0])
         })
         .catch(e => console.log(e))
+    }
+  }, [state.connectedDevice])
+  
+  useEffect(() => {
+    if (state.connectedDevice) {
+      BluetoothHelper.subscribe(state.connectedDevice, 'battery_service', 'battery_level', (data) => {
+        setBatteryLevel(data[0])
+      })
+
+      return () => {
+        (async function() {
+          batteryLevelCharacteristic?.removeEventListener('characteristicvaluechanged', batteryLevelListener)
+          batteryLevelCharacteristic?.stopNotifications()
+        })();
+      }
     }
   }, [state.connectedDevice])
 
@@ -42,8 +57,21 @@ const Details: React.FC = () => {
           Disconnect
         </button>
       </div>
-      <div className="app__foo">
-        {batteryLevel && <h2>Battery level: {batteryLevel}%</h2>}
+      <div className="device-details">
+        <fieldset className="device-details__wrapper">
+          <div className="device-details__field">
+            <span>Name:</span>
+            <span>{connectedDevice.name}</span>
+          </div>
+          <div className="device-details__field">
+            <span>Address:</span>
+            <span>{state.connectedDevice}</span>
+          </div>
+          <div className="device-details__field">
+            <span>Battery level:</span>
+            <span>{batteryLevel ? `${batteryLevel}%` : 'Loading...'}</span>
+          </div>
+        </fieldset>
       </div>
     </div>
   )

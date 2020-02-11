@@ -9,7 +9,7 @@ const { ipcRenderer } = window.require('electron')
 
 const Scan: React.FC = () => {
   const [isScanning, setIsScanning] = useState(false)
-  const [deviceToConnect, setDeviceToConnect] = useState('')
+  const [deviceToConnect, setDeviceToConnect] = useState<string | null>(null)
   const { state, dispatch } = useContext(StateContext)
   const history = useHistory()
 
@@ -52,14 +52,14 @@ const Scan: React.FC = () => {
           type: 'SET_CONNECTED_DEVICE',
           payload: device,
         })
-        setDeviceToConnect('')
+        setDeviceToConnect(null)
       })
       .catch(() => {
         dispatch({
           type: 'SET_CONNECTED_DEVICE',
           payload: null,
         })
-        setDeviceToConnect('')
+        setDeviceToConnect(null)
       })
   }
 

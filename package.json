@@ -50,5 +50,5 @@
     "electron": "^7.1.11",
     "wait-on": "^4.0.0"
   },
-  "main": "public/main.js"
+  "main": "public/electron.js"
 }
