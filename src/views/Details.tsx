@@ -1,8 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react'
 import { Redirect, useHistory } from 'react-router-dom'
 import { ArrowLeft, X } from 'react-feather'
-import BluetoothHelper, { connectedDevice, batteryLevelCharacteristic, batteryLevelListener } from '../utils/bluetooth'
 import { StateContext } from '../utils/context'
+import BluetoothHelper, {
+  connectedDevice,
+  batteryLevelCharacteristic,
+  batteryLevelListener,
+} from '../utils/bluetooth'
 
 const Details: React.FC = () => {
   const history = useHistory()
@@ -10,27 +14,24 @@ const Details: React.FC = () => {
   const [batteryLevel, setBatteryLevel] = useState<number | null>(null)
 
   useEffect(() => {
-    if (state.connectedDevice) {
+    if (connectedDevice?.gatt?.connected) {
       BluetoothHelper.read(state.connectedDevice, 'battery_service', 'battery_level')
-        .then(value => {
+        .then((value: Uint8Array) => {
           setBatteryLevel(value[0])
+          BluetoothHelper.subscribe(state.connectedDevice, 'battery_service', 'battery_level', (data: Uint8Array) => {
+            setBatteryLevel(data[0])
+          })
         })
-        .catch(e => console.log(e))
+        .catch((e: Error) => console.log(e))
     }
-  }, [state.connectedDevice])
-  
-  useEffect(() => {
-    if (state.connectedDevice) {
-      BluetoothHelper.subscribe(state.connectedDevice, 'battery_service', 'battery_level', (data) => {
-        setBatteryLevel(data[0])
-      })
-
-      return () => {
-        (async function() {
+    
+    return () => {
+      (async function() {
+        if (connectedDevice?.gatt?.connected) {
           batteryLevelCharacteristic?.removeEventListener('characteristicvaluechanged', batteryLevelListener)
           batteryLevelCharacteristic?.stopNotifications()
-        })();
-      }
+        }
+      })()
     }
   }, [state.connectedDevice])
 

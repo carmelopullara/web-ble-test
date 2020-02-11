@@ -1,39 +1,17 @@
+import { WebBle, IDevice } from './types'
+
 const { ipcRenderer } = window.require('electron')
 
 export let connectedDevice: BluetoothDevice | null = null
 export let batteryLevelCharacteristic: BluetoothRemoteGATTCharacteristic | null = null
-export let batteryLevelListener: (event: any) => void | null
-
-type DeviceId = string
-
-export interface IDevice {
-  deviceId: DeviceId
-  deviceName: string
-}
-
-interface WebBle {
-  startScanning: (cb: (device: DeviceId, name: string) => void) => Promise<void>
-  connect: (device: DeviceId, onDisconnect: () => void) => Promise<void>
-  read: (
-    device: DeviceId,
-    serviceUuid: string,
-    characteristicUuid: string
-  ) => Promise<Uint8Array>
-  subscribe: (
-    device: DeviceId,
-    serviceUuid: string,
-    characteristicUuid: string,
-    cb: (data: Uint8Array) => void
-  ) => Promise<void>
-
-  disconnect: (device: DeviceId) => Promise<void>
-}
+export let batteryLevelListener: (event: Event) => void | null
 
 const BluetoothHelper: WebBle = {
   startScanning: cb => {
     const navigator = window.navigator
-    navigator.bluetooth.requestDevice({
-        filters: [{ services: ['battery_service'] }]
+    navigator.bluetooth
+      .requestDevice({
+        filters: [{ services: ['battery_service'] }],
       })
       .catch((error: Error) => {
         console.log(error)
@@ -49,9 +27,11 @@ const BluetoothHelper: WebBle = {
     new Promise(async (resolve, reject) => {
       try {
         const navigator = window.navigator
-        const device: BluetoothDevice = await navigator.bluetooth.requestDevice({
-          filters: [{ services: ['battery_service'] }],
-        })
+        const device: BluetoothDevice = await navigator.bluetooth.requestDevice(
+          {
+            filters: [{ services: ['battery_service'] }],
+          }
+        )
 
         device.addEventListener('gattserverdisconnected', () => {
           connectedDevice = null
@@ -66,27 +46,40 @@ const BluetoothHelper: WebBle = {
         reject()
       }
     }),
-  read: (device, serviceUuid, characteristicUuid) => new Promise(async (resolve, reject) => {
-    try {
-      if (connectedDevice) {
-        const service = await connectedDevice.gatt!.getPrimaryService(serviceUuid)
-        const characteristic = await service.getCharacteristic(characteristicUuid)
-        const value = await characteristic.readValue()
-        resolve(new Uint8Array(value.buffer))
+  read: (device, serviceUuid, characteristicUuid) =>
+    new Promise(async (resolve, reject) => {
+      try {
+        if (connectedDevice) {
+          const service = await connectedDevice.gatt!.getPrimaryService(
+            serviceUuid
+          )
+          const characteristic = await service.getCharacteristic(
+            characteristicUuid
+          )
+          const value = await characteristic.readValue()
+          resolve(new Uint8Array(value.buffer))
+        }
+      } catch (error) {
+        reject(error)
       }
-    } catch (error) {
-      reject(error)
-    }
-  }),
+    }),
   subscribe: async (device, serviceUuid, characteristicUuid, cb) => {
     try {
       if (connectedDevice) {
-        const service = await connectedDevice.gatt!.getPrimaryService(serviceUuid)
-        batteryLevelCharacteristic = await service.getCharacteristic(characteristicUuid)
-        batteryLevelListener = (event: any) => {
-          cb(new Uint8Array(event.target.value.buffer))
+        const service = await connectedDevice.gatt!.getPrimaryService(
+          serviceUuid
+        )
+        batteryLevelCharacteristic = await service.getCharacteristic(
+          characteristicUuid
+        )
+        batteryLevelListener = event => {
+          const target = event.target as BluetoothRemoteGATTCharacteristic
+          const value = target.value
+          if (value) {
+            cb(new Uint8Array(value.buffer))
+          }
         }
-        
+
         batteryLevelCharacteristic.addEventListener('characteristicvaluechanged', batteryLevelListener)
         batteryLevelCharacteristic.startNotifications()
       }
@@ -94,12 +87,13 @@ const BluetoothHelper: WebBle = {
       console.log(error)
     }
   },
-  disconnect: (device) => new Promise(async (resolve) => {
-    if (connectedDevice) {
-      connectedDevice.gatt!.disconnect()
-      resolve()
-    }
-  })
+  disconnect: device =>
+    new Promise(async resolve => {
+      if (connectedDevice) {
+        connectedDevice.gatt!.disconnect()
+        resolve()
+      }
+    }),
 }
 
 export default BluetoothHelper

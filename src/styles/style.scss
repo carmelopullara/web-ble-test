@@ -40,6 +40,21 @@ h6 {
     &-title {
       margin: 0;
     }
+    &-actions {
+      display: flex;
+      align-items: center;
+
+      .app__header-loader {
+        margin-right: 15px;
+        > svg {
+          animation: rotate 1s infinite linear;
+          color: #718096;
+          height: 1rem;
+          width: 1rem;
+        }
+      }
+
+    }
   }
   &__table {
     border-collapse: collapse;
@@ -159,5 +174,14 @@ h6 {
     span:first-child {
       font-weight: 500;
     }
+  }
+}
+
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(359deg);
   }
 }

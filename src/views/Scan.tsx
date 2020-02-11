@@ -1,9 +1,10 @@
 import React, { useState, useContext } from 'react'
 import { useHistory } from 'react-router-dom'
 import cx from 'classnames'
-import BluetoothHelper, { IDevice } from '../utils/bluetooth'
-import { Play, X } from 'react-feather'
+import BluetoothHelper from '../utils/bluetooth'
+import { Play, X, Loader } from 'react-feather'
 import { StateContext } from '../utils/context'
+import { IDevice } from '../utils/types'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -44,7 +45,7 @@ const Scan: React.FC = () => {
     BluetoothHelper.connect(device, () => {
       dispatch({
         type: 'SET_CONNECTED_DEVICE',
-        payload: null,
+        payload: '',
       })
     })
       .then(() => {
@@ -57,7 +58,7 @@ const Scan: React.FC = () => {
       .catch(() => {
         dispatch({
           type: 'SET_CONNECTED_DEVICE',
-          payload: null,
+          payload: '',
         })
         setDeviceToConnect(null)
       })
@@ -67,7 +68,14 @@ const Scan: React.FC = () => {
     <div className="app__content">
       <div className="app__header">
         <h3 className="app__header-title">Devices</h3>
-        <div>
+        <div className="app__header-actions">
+          {
+            isScanning && (
+              <div className="app__header-loader">
+                <Loader />
+              </div>
+            )
+          }
           <button
             className={cx('btn', {
               'btn--stop': isScanning,

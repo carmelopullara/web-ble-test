@@ -2,26 +2,16 @@ import React, { useReducer } from 'react'
 import ReactDOM from 'react-dom'
 import { HashRouter as Router, Route } from 'react-router-dom'
 import { StateContext } from './utils/context'
-import { IDevice } from './utils/bluetooth'
 import Scan from './views/Scan'
 import Details from './views/Details'
 import 'normalize.css/normalize.css'
 import './styles/style.scss'
-
-interface State {
-  nearbyDevices: IDevice[]
-  connectedDevice: BluetoothDevice | null
-}
-
-interface Action {
-  type: string
-  payload?: any
-}
+import { Action, State } from './utils/types'
 
 const App = () => {
   const initialState: State = {
     nearbyDevices: [],
-    connectedDevice: null,
+    connectedDevice: '',
   }
 
   const reducer = (state: State, action: Action) => {
