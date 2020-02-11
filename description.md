@@ -12,6 +12,10 @@ Once the device is selected the scan is repeated, but this time a parameter is p
 
 **Detail view**
 
-Once the detail view is rendered, the `useEffect` hook is called. It first calls the `read` method to retrieve the battery level, and then it subscribes to the device and updates the battery level when the value changes. The hook returns a function that unsubscribes and removes the event listeners, in order to avoid state updates on a unmounted component.
+Once the detail view is rendered, the `useEffect` hook is called. It first invokes the `read` method to retrieve the battery level, and then it subscribes to the device and updates the battery level when the value changes. The hook returns a function that unsubscribes and removes the event listeners, in order to avoid state updates on a unmounted component.
 
 I complied with the WebBle interface you provided in the Notion doc, but the `device` parameter in the `connect`, `read`, `subscribe` and `disconnect` methods is not actually used because the device is already returned by the main process.
+
+To run the application:
+
+`yarn dev`
