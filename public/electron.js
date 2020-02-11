@@ -37,6 +37,8 @@ ipcMain.on('connect-device', (event, arg) => {
 
     if (result) {
       callback(result.deviceId);
+    } else {
+      callback('')
     }
   })
 })
