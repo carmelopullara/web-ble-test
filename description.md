@@ -16,6 +16,14 @@ Once the detail view is rendered, the `useEffect` hook is called. It first invok
 
 I complied with the WebBle interface you provided in the Notion doc, but the `device` parameter in the `connect`, `read`, `subscribe` and `disconnect` methods is not actually used because the device is already returned by the main process.
 
-To run the application:
+---
+
+**About the styling**:
+
+I usually prefer to use CSS modules, but since this app has very few components, I decided to use plain SCSS.
+
+---
+
+**To run the application**:
 
 `yarn dev`
